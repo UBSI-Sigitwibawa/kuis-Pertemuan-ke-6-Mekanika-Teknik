@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Mekanika Bantalan Gelinding — Pertemuan 6</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e3a5f;
+    --accent: #00d4ff;
+    --accent2: #0066ff;
+    --gold: #f5c518;
+    --green: #00ff9d;
+    --red: #ff4757;
+    --text: #e8edf5;
+    --text-dim: #8899bb;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, rgba(0,102,255,0.12), rgba(0,212,255,0.06));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent2));
+    border-radius: 16px 16px 0 0;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* ── IDENTITY FORM ── */
+  #identity-screen { animation: fadeIn .4s ease; }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .form-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-card h2::before { content: '◈'; font-size: 14px; }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+  }
+  .field input::placeholder { color: #3a4a6b; }
+  .field select option { background: #1a2236; }
+
+  .rules {
+    background: rgba(245,197,24,0.05);
+    border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .rules h3 {
+    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .rules ul { list-style: none; padding: 0; }
+  .rules li {
+    color: #c5a840;
+    font-size: 13px;
+    padding: 3px 0;
+    padding-left: 18px;
+    position: relative;
+  }
+  .rules li::before { content: '→'; position: absolute; left: 0; color: var(--gold); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,102,255,0.4); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz-screen { display: none; animation: fadeIn .4s ease; }
+
+  .progress-bar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    height: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 40px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .quiz-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .quiz-counter span { color: var(--accent); font-weight: 600; }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+    position: relative;
+    transition: border-color .3s;
+  }
+  .question-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+  .question-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #d4e0f5;
+    margin-bottom: 22px;
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+  .option.selected { border-color: var(--accent2); background: rgba(0,102,255,0.08); }
+  .option.correct { border-color: var(--green); background: rgba(0,255,157,0.07); }
+  .option.wrong { border-color: var(--red); background: rgba(255,71,87,0.07); }
+  .option.disabled { cursor: default; }
+
+  .option-key {
+    min-width: 26px;
+    height: 26px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .option.selected .option-key { border-color: var(--accent2); color: var(--accent); }
+  .option.correct .option-key { border-color: var(--green); color: var(--green); background: rgba(0,255,157,0.1); }
+  .option.wrong .option-key { border-color: var(--red); color: var(--red); background: rgba(255,71,87,0.1); }
+
+  .option-text { font-size: 14px; line-height: 1.5; color: var(--text); padding-top: 3px; }
+
+  .feedback {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+  .feedback.correct-fb { background: rgba(0,255,157,0.07); border: 1px solid rgba(0,255,157,0.2); color: #7affd0; }
+  .feedback.wrong-fb { background: rgba(255,71,87,0.07); border: 1px solid rgba(255,71,87,0.2); color: #ff8fa0; }
+  .feedback.show { display: flex; }
+
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .btn-next {
+    flex: 1;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-next.show { display: flex; }
+  .btn-next:hover { box-shadow: 0 6px 20px rgba(0,102,255,0.4); }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen { display: none; animation: fadeIn .5s ease; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring .score-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .score-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
+
+  .result-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .result-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-box .val {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .stat-box .lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-box.green .val { color: var(--green); }
+  .stat-box.red .val { color: var(--red); }
+  .stat-box.blue .val { color: var(--accent); }
+
+  .grade-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .grade-A { background: rgba(0,255,157,0.12); border: 1px solid rgba(0,255,157,0.3); color: var(--green); }
+  .grade-B { background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.3); color: var(--accent); }
+  .grade-C { background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.3); color: var(--gold); }
+  .grade-D { background: rgba(255,71,87,0.12); border: 1px solid rgba(255,71,87,0.3); color: var(--red); }
+
+  .btn-pdf {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #1a4a1a, #0a3a0a);
+    border: 1px solid rgba(0,255,157,0.3);
+    border-radius: 10px;
+    color: var(--green);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-pdf:hover { box-shadow: 0 6px 20px rgba(0,255,157,0.2); background: rgba(0,255,157,0.1); }
+
+  /* Already done screen */
+  #done-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+  }
+  .done-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .done-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .done-msg { color: var(--text-dim); font-size: 15px; line-height: 1.6; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 520px) {
+    .stat-row { grid-template-columns: repeat(3,1fr); }
+    .stat-box .val { font-size: 18px; }
+    .question-text { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">BSI · Mekanika Teknik · P-06</div>
+    <h1>Mekanika Bantalan Gelinding</h1>
+    <p>Universitas Bina Sarana Informatika &nbsp;|&nbsp; 30 Soal Pilihan Ganda &nbsp;|&nbsp; Dikerjakan 1×</p>
+  </div>
+
+  <!-- ALREADY DONE -->
+  <div id="done-screen">
+    <span class="done-icon">🔒</span>
+    <div class="done-title">Kuis Sudah Dikerjakan</div>
+    <div class="done-msg">Anda telah menyelesaikan kuis ini sebelumnya.<br>Kuis hanya dapat dikerjakan <strong>1 kali</strong> per perangkat.<br><br>Silakan unduh hasil PDF Anda dari sesi sebelumnya.</div>
+  </div>
+
+  <!-- IDENTITY SCREEN -->
+  <div id="identity-screen">
+    <div class="form-card">
+      <h2>Identitas Mahasiswa</h2>
+      <div class="field">
+        <label>Nama Lengkap</label>
+        <input type="text" id="inp-nama" placeholder="Masukkan nama lengkap Anda" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>NIM (Nomor Induk Mahasiswa)</label>
+        <input type="text" id="inp-nim" placeholder="Contoh: 12345678" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Kelas</label>
+        <input type="text" id="inp-kelas" placeholder="Contoh: 12.1A.01" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="rules">
+      <h3>⚠ Peraturan Kuis</h3>
+      <ul>
+        <li>Kuis hanya dapat dikerjakan <strong>1 kali</strong> per perangkat/browser</li>
+        <li>Terdapat 30 soal pilihan ganda dari materi Pertemuan 6</li>
+        <li>Setiap soal langsung diberi umpan balik setelah dijawab</li>
+        <li>Jawaban tidak dapat diubah setelah dipilih</li>
+        <li>Hasil akhir dapat diunduh dalam format PDF</li>
+        <li>Pastikan koneksi internet stabil sebelum mulai</li>
+      </ul>
+    </div>
+
+    <button class="btn-primary" id="btn-mulai" onclick="startQuiz()">MULAI KUIS →</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz-screen">
+    <div class="quiz-meta">
+      <span class="quiz-counter">Soal <span id="q-num">1</span> / 30</span>
+      <span class="quiz-counter">Benar: <span id="q-score" style="color:var(--green)">0</span></span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:3.33%"></div>
+    </div>
+
+    <div class="question-card" id="q-card">
+      <div class="question-num" id="q-label">SOAL 01</div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="q-options"></div>
+    </div>
+
+    <div class="feedback" id="q-feedback"></div>
+
+    <div class="nav-row">
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">
+        <span id="next-label">Soal Berikutnya →</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen">
+    <div class="result-card">
+      <div class="score-ring">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="10"/>
+          <circle cx="70" cy="70" r="58" fill="none" stroke="url(#grad)" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="364" stroke-dashoffset="364" id="ring-circle"/>
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#0066ff"/>
+              <stop offset="100%" style="stop-color:#00d4ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-num">
+          <div class="score-big" id="res-pct">0</div>
+          <div class="score-label">NILAI</div>
+        </div>
+      </div>
+
+      <div class="result-name" id="res-name">—</div>
+      <div class="result-info" id="res-info">—</div>
+
+      <div class="stat-row">
+        <div class="stat-box green">
+          <div class="val" id="res-benar">0</div>
+          <div class="lbl">Benar</div>
+        </div>
+        <div class="stat-box red">
+          <div class="val" id="res-salah">0</div>
+          <div class="lbl">Salah</div>
+        </div>
+        <div class="stat-box blue">
+          <div class="val" id="res-total">30</div>
+          <div class="lbl">Total</div>
+        </div>
+      </div>
+
+      <div id="res-grade" class="grade-badge grade-A">PREDIKAT A</div>
+      <div id="res-msg" style="color:var(--text-dim);font-size:14px;margin-bottom:24px;line-height:1.6"></div>
+
+      <button class="btn-pdf" onclick="downloadPDF()">
+        ⬇ Unduh Hasil sebagai PDF
+      </button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ──────────────────────────────────────────────
+// DATA SOAL (30 questions)
+// ──────────────────────────────────────────────
+const SOAL = [
+  {
+    q: "Gesekan mekanis didefinisikan sebagai gaya alamiah yang melawan gerakan antara dua permukaan. Pernyataan manakah yang paling tepat menggambarkan sifat gesekan tersebut?",
+    opts: ["Gesekan dapat dihilangkan sepenuhnya dengan teknologi yang cukup canggih","Gesekan hanya terjadi pada permukaan logam yang kasar","Gesekan adalah keniscayaan mekanis yang hanya bisa dikurangi, tidak dihilangkan","Gesekan selalu menghasilkan energi baru dari permukaan yang bergerak"],
+    ans: 2,
+    fb: "Hukum mutlak: Gesekan TIDAK BISA dihilangkan sepenuhnya — hanya bisa dikurangi. Bahkan permukaan paling halus sekalipun tetap menghasilkan gesekan residual."
+  },
+  {
+    q: "Sebuah poros mesin mengalami kontak langsung dengan dudukannya tanpa bantalan. Permukaan yang kasar menghasilkan gesekan tinggi. Apa konsekuensi fisik langsung dari kondisi ini?",
+    opts: ["Poros akan berputar lebih cepat karena tidak ada hambatan","Permukaan kasar menghasilkan gesekan eksponensial, menimbulkan panas ekstrem dan keausan","Gesekan hanya terjadi pada awal start-up, tidak berkelanjutan","Keausan terjadi hanya pada material yang lebih keras"],
+    ans: 1,
+    fb: "Permukaan kasar menghasilkan gesekan eksponensial. Konsekuensinya adalah panas ekstrem dan keausan logam secara bertahap — dua efek destruktif yang berkelanjutan selama mesin beroperasi."
+  },
+  {
+    q: "Ada tiga metode utama yang digunakan untuk memitigasi gesekan mekanis dalam sistem mesin. Manakah kombinasi yang benar?",
+    opts: ["Pendinginan, pengerasan logam, dan pengecatan permukaan","Pelumasan, penggunaan gear, dan pemasangan bearing (bantalan)","Vakum, suhu rendah, dan permukaan cermin","Getaran ultrasonik, magnet permanen, dan lapisan teflon"],
+    ans: 1,
+    fb: "Tiga metode utama mitigasi gesekan: (1) Pelumasan — menciptakan lapisan film antara permukaan, (2) Penggunaan gear — mengubah kontak gesek menjadi kontak gelinding, (3) Pemasangan bearing — menggantikan gesekan luncur dengan gesekan gelinding yang jauh lebih kecil."
+  },
+  {
+    q: "Sebuah mesin bubut memiliki poros utama dengan beban gravitasi yang tegak lurus terhadap sumbu poros. Jenis beban apakah yang bekerja pada bantalan poros ini?",
+    opts: ["Beban Aksial (Thrust Load)","Beban Kombinasi (Combined Load)","Beban Radial (Radial Load)","Beban Momen (Moment Load)"],
+    ans: 2,
+    fb: "Beban Radial adalah gaya yang menekan secara tegak lurus terhadap sumbu poros. Beban gravitasi pada poros horizontal merupakan contoh klasik beban radial, karena arah gayanya tegak lurus sumbu putar."
+  },
+  {
+    q: "Pada sebuah propeller kapal, gaya dorong yang dihasilkan baling-baling bekerja sejajar dengan sumbu poros (mendorong kapal maju). Jenis beban pada bantalan poros propeller ini adalah...",
+    opts: ["Beban Radial","Beban Aksial (Thrust Load)","Beban Kombinasi","Beban Transversal"],
+    ans: 1,
+    fb: "Beban Aksial atau Thrust Load adalah gaya yang mendorong sejajar dengan garis sumbu poros. Propeller kapal adalah contoh sempurna: gaya thrust mendorong kapal sejajar sumbu baling-baling."
+  },
+  {
+    q: "Roda depan sebuah mobil menanggung berat kendaraan (radial) sekaligus gaya dari menikung tajam (aksial). Jenis bantalan mana yang paling optimal untuk aplikasi ini?",
+    opts: ["Ball Bearing standar — karena ringan dan murah","Thrust Ball Bearing — karena khusus untuk beban aksial","Taper Roller Bearing — karena didesain menangani beban kombinasi radial + aksial","Needle Bearing — karena hemat ruang"],
+    ans: 2,
+    fb: "Beban Kombinasi (radial + aksial sekaligus) paling optimal ditangani oleh Taper Roller Bearing (kerucut). Desain sudut gandanya mampu menahan beban dari berbagai arah bersamaan, itulah mengapa roda kendaraan hampir selalu menggunakan jenis ini."
+  },
+  {
+    q: "Plain Bearing (bantalan luncur) dan Bantalan Gelinding adalah dua kategori utama bearing. Apa perbedaan mendasar yang menyebabkan bantalan gelinding jauh lebih efisien?",
+    opts: ["Bantalan gelinding terbuat dari material lebih keras sehingga tahan lama","Bantalan gelinding mereduksi area kontak dari bidang luas menjadi titik (bola) atau garis (silinder), menurunkan gesekan drastis","Bantalan gelinding tidak memerlukan pelumasan sama sekali","Bantalan gelinding hanya cocok untuk beban ringan"],
+    ans: 1,
+    fb: "Kunci keunggulan bantalan gelinding: kontak direduksi dari BIDANG (area luas) menjadi TITIK (untuk bola) atau GARIS (untuk silinder/rol). Area kontak yang minimal berarti gesekan yang jauh lebih kecil — prinsip fisika dasar yang mengubah mekanika mesin modern."
+  },
+  {
+    q: "Fungsi utama bantalan gelinding dalam sistem mesin adalah...",
+    opts: ["Menghasilkan gaya penggerak untuk poros","Menahan dan mendukung poros agar tetap presisi pada kedudukannya saat berputar","Mengubah energi rotasi menjadi energi linear","Mencegah poros dari overheating akibat gesekan"],
+    ans: 1,
+    fb: "Bantalan gelinding adalah komponen presisi yang berfungsi untuk MENAHAN dan MENDUKUNG suatu poros agar tetap presisi pada kedudukannya saat berputar — beroperasi dengan resistensi minimal untuk menjaga efisiensi perpindahan daya."
+  },
+  {
+    q: "Berdasarkan Matriks Identifikasi Elemen Gelinding, Ball Bearing (Bola) memiliki karakteristik mekanis berupa...",
+    opts: ["Media gesekan berupa pipa/tong baja cembung","Media gesekan berupa silinder baja sangat kecil menyerupai jarum","Media gesekan berupa bola-bola baja simetris","Media gesekan berupa roller berbentuk kerucut miring"],
+    ans: 2,
+    fb: "Ball Bearing menggunakan bola-bola baja simetris sebagai elemen gelinding. Bentuk bola yang sempurna simetris memungkinkan kontak titik, sehingga cocok untuk kecepatan putar tinggi dengan gesekan sangat rendah."
+  },
+  {
+    q: "Needle Bearing (Bantalan Jarum) memiliki keunggulan desain yang sangat spesifik. Apa keunggulan utama Needle Bearing?",
+    opts: ["Mampu menahan beban aksial yang sangat besar","Profil ultra-tipis, sangat hemat ruang vertikal untuk menahan beban radial tinggi","Desain sudut ganda untuk beban kombinasi","Toleransi tinggi terhadap misalignment poros"],
+    ans: 1,
+    fb: "Needle Bearing memiliki profil ultra-tipis (elemen gelinding berupa silinder baja sangat kecil menyerupai jarum). Keunggulannya: sangat hemat ruang vertikal sambil tetap mampu menahan beban radial tinggi — ideal untuk komponen mesin yang ruangnya terbatas."
+  },
+  {
+    q: "Barrels Bearing (Bantalan Tong) menggunakan elemen berbentuk tong/barrel yang melengkung. Apa keunggulan spesifik desain ini dibandingkan silinder lurus?",
+    opts: ["Profil melengkung menoleransi sedikit kemiringan (misalignment) pada poros","Profil melengkung mampu menerima beban aksial murni","Profil melengkung mengurangi kebutuhan pelumasan","Profil melengkung cocok untuk putaran tinggi ekstrem"],
+    ans: 0,
+    fb: "Profil melengkung (barrel shape) dari Barrels Bearing menciptakan kemampuan self-aligning — menoleransi sedikit kemiringan atau misalignment pada poros. Ini sangat penting pada aplikasi di mana sumbu poros tidak 100% lurus sempurna."
+  },
+  {
+    q: "Pada Pohon Keluarga Bearing (Arsitektur Fungsional), Taper Roller Bearing masuk dalam kategori...",
+    opts: ["Kategori 1: Berbasis Bola (Kecepatan Utama)","Kategori 3: Non-Gelinding (Spesialisasi)","Kategori 2: Berbasis Rol (Beban Berat)","Tidak termasuk dalam kategori manapun"],
+    ans: 2,
+    fb: "Taper Roller Bearing masuk Kategori 2: Berbasis Rol (Beban Berat), bersama Cylindrical Roller, Spherical Roller, dan Needle Roller. Kategori ini dioptimalkan untuk aplikasi beban berat, di mana kontak garis (line contact) roller memberikan distribusi beban yang superior."
+  },
+  {
+    q: "Deep Groove Ball Bearing memiliki karakteristik 'alur lintasan bola yang dalam'. Apa manfaat teknis dari desain alur yang dalam ini?",
+    opts: ["Memungkinkan penggunaan tanpa pelumasan sama sekali","Memberikan stabilitas ekstra dan kapasitas beban aksial dua arah","Meningkatkan kecepatan putaran maksimum","Mengurangi kebutuhan material baja"],
+    ans: 1,
+    fb: "Alur yang dalam (deep groove) pada Deep Groove Ball Bearing memberikan: (1) stabilitas ekstra pada bola, (2) kemampuan menahan beban aksial DUA ARAH (tidak hanya satu arah). Ini menjadikannya desain yang serbaguna dan ekonomis — cocok untuk motor listrik kecil, pompa air, mesin cuci."
+  },
+  {
+    q: "Angular Contact Ball Bearing sering dipasang berpasangan (back-to-back atau face-to-face). Mengapa bearing ini sering dipasang berpasangan?",
+    opts: ["Karena satu unit tidak cukup kuat menahan beban radial","Karena bearing ini hanya menahan beban aksial satu arah, pemasangan berpasangan memungkinkan penerimaan aksial dua arah","Karena desainnya membutuhkan dua unit untuk berfungsi","Karena harganya lebih murah jika dibeli sepasang"],
+    ans: 1,
+    fb: "Angular Contact Ball Bearing dirancang dengan sudut kontak khusus untuk beban kombinasi (radial + aksial). Namun satu unit hanya efektif untuk aksial satu arah. Pemasangan berpasangan (back-to-back) memungkinkan penerimaan beban aksial dari DUA arah — sangat umum pada spindle mesin CNC dan kompresor."
+  },
+  {
+    q: "Thrust Ball Bearing memiliki batasan desain yang sangat kritis. Apa batasan tersebut?",
+    opts: ["Tidak bisa beroperasi pada kecepatan tinggi","Tidak memiliki kapasitas beban radial sama sekali — hanya untuk beban aksial murni","Hanya untuk material non-logam","Tidak bisa digunakan pada suhu di atas 100°C"],
+    ans: 1,
+    fb: "Thrust Ball Bearing dirancang KHUSUS HANYA untuk beban sejajar poros (aksial murni). Tidak ada kapasitas beban radial. Penggunaan pada sistem dengan beban radial akan merusak bearing dengan cepat. Aplikasi: meja putar, dongkrak ulir, poros vertikal."
+  },
+  {
+    q: "Cylindrical Roller Bearing menggunakan elemen silinder lurus. Mengapa desain silinder lurus memaksimalkan kapasitas beban radial?",
+    opts: ["Karena silinder lebih ringan dari bola","Karena kontak garis (line contact) antara silinder dan lintasan mendistribusikan beban radial secara merata pada area yang lebih luas","Karena silinder tidak membutuhkan sangkar (cage)","Karena silinder dapat berputar lebih cepat dari bola"],
+    ans: 1,
+    fb: "Kunci keunggulan Cylindrical Roller Bearing: kontak GARIS (line contact) vs kontak TITIK pada ball bearing. Kontak garis mendistribusikan beban radial pada area yang jauh lebih luas, menghasilkan kapasitas beban radial ekstrim. Implementasi: generator, rolling mill, motor listrik besar."
+  },
+  {
+    q: "Tapered Roller Bearing memiliki persyaratan pemasangan khusus yang membedakannya dari bearing lain. Persyaratan khusus tersebut adalah...",
+    opts: ["Harus selalu dipasang dalam kondisi vakum","Wajib dipasang dengan penyetelan preload/clearance yang tepat","Tidak boleh menggunakan pelumas gemuk (grease)","Hanya bisa dipasang pada posisi vertikal"],
+    ans: 1,
+    fb: "Tapered Roller Bearing WAJIB dipasang dengan penyetelan preload/clearance yang presisi. Ini karena geometri kerucut menghasilkan gaya aksial parasit saat menanggung beban radial — penyetelan yang salah akan menyebabkan kegagalan prematur. Ini adalah satu alasan teknik yang membedakannya dari bearing lain."
+  },
+  {
+    q: "Dalam diagram ekosistem mekanik, Spherical Roller Bearing digunakan pada aplikasi konveyor. Apa keunggulan spesifik Spherical Roller Bearing untuk aplikasi ini?",
+    opts: ["Harga paling murah di antara semua jenis bearing","Mendukung beban radial material masif DAN menoleransi poros yang melengkung","Kecepatan putaran tertinggi","Ukuran paling kompak"],
+    ans: 1,
+    fb: "Spherical Roller Bearing (Bantalan Tong/Barrels) memiliki dua keunggulan kritis untuk konveyor: (1) mampu menahan beban radial besar dari material masif, (2) menoleransi poros yang melengkung akibat defleksi beban berat — sangat penting pada sistem konveyor panjang."
+  },
+  {
+    q: "Mengapa sistem pelumasan dinyatakan WAJIB diaplikasikan meskipun bantalan gelinding sudah sangat meminimalkan gesekan?",
+    opts: ["Karena regulasi industri mewajibkannya","Karena gesekan absolut tidak pernah mencapai 0% — sisa gesekan tetap menghasilkan panas ekstrem dan keausan bertahap","Karena bantalan tanpa pelumas akan langsung patah saat dihidupkan","Karena pelumas berfungsi sebagai peredam getaran utama"],
+    ans: 1,
+    fb: "Bantalan gelinding memang meminimalkan gesekan secara drastis, NAMUN gesekan absolut tidak pernah mencapai 0%. Sisa gesekan ini tetap menghasilkan panas ekstrem dan keausan logam secara bertahap. Tanpa pelumasan yang tepat — dari tetesan perlahan hingga pompa bertekanan tinggi — efisiensi mesin akan runtuh seketika."
+  },
+  {
+    q: "Dua variabel utama yang menentukan pemilihan metode pelumasan pada bantalan gelinding adalah...",
+    opts: ["Ukuran bearing dan material poros","Beban Kerja dan Posisi Bearing","Kecepatan putar dan suhu lingkungan","Harga bearing dan kemudahan penggantian"],
+    ans: 1,
+    fb: "Dua variabel utama penentuan metode pelumasan: (1) BEBAN KERJA — menentukan viskositas dan jenis pelumas yang dibutuhkan, (2) POSISI BEARING — misalnya poros vertikal memerlukan metode khusus (pelumasan celup) karena gravitasi akan mengalirkan pelumas keluar dari bearing."
+  },
+  {
+    q: "Pelumasan Gemuk (Grease/Vet) dipilih sebagai standar utama untuk sebagian besar bantalan gelinding. Mengapa?",
+    opts: ["Karena gemuk lebih murah dari oli mesin","Karena gemuk bersifat solid-state, tidak mengalir keluar, ideal untuk bantalan gelinding pada berbagai kondisi","Karena gemuk tidak memerlukan penggantian seumur hidup bearing","Karena gemuk memberikan kapasitas pendinginan terbaik"],
+    ans: 1,
+    fb: "Pelumasan Gemuk (Grease) menjadi standar utama karena sifat solid-state-nya: tidak mengalir keluar seperti oli, tetap berada di sekitar elemen gelinding, memberikan pelumasan konsisten pada berbagai orientasi poros dan kondisi operasi — sangat ideal untuk bantalan gelinding di lapangan."
+  },
+  {
+    q: "Seorang teknisi merawat mesin dengan poros vertikal (tegak). Metode pelumasan khusus apa yang tepat untuk posisi ini?",
+    opts: ["Pelumasan Tetes — karena paling mudah dilakukan","Pelumasan Sumbu — karena kapilaritasnya bekerja ke segala arah","Pelumasan Celup — menggunakan bak oli khusus karena posisi poros tegak vertikal","Pelumasan Pompa — karena poros vertikal selalu berputar cepat"],
+    ans: 2,
+    fb: "Pelumasan Celup (submerged/oil bath) menggunakan bak oli khusus — metode SPESIAL untuk bantalan pada poros tegak vertikal. Pada posisi vertikal, gravitasi akan mengalirkan oli turun menjauhi bearing. Bak oli memastikan elemen gelinding selalu terendam pelumas."
+  },
+  {
+    q: "Pelumasan Pompa (Forced Circulation) digunakan untuk kondisi operasi yang sangat spesifik. Kondisi tersebut adalah...",
+    opts: ["Beban sangat ringan dan putaran sangat rendah","Beban berat dan putaran ekstrem yang menghasilkan panas tinggi","Hanya untuk bearing berukuran sangat kecil","Untuk bearing yang sering diservis rutin"],
+    ans: 1,
+    fb: "Pelumasan Pompa menggunakan sistem tekanan oli aktif — digunakan untuk kondisi beban berat DAN putaran ekstrem. Pada kondisi ini, panas yang dihasilkan sangat tinggi dan metode pelumasan pasif (gemuk, sumbu, percik) tidak mampu menyuplai pelumas secukupnya. Sistem pompa memastikan aliran oli yang konstant dan terkontrol."
+  },
+  {
+    q: "Pelumasan Sumbu menggunakan prinsip kapilaritas — mirip cara kerja sumbu kompor. Untuk aplikasi apa pelumasan ini paling sesuai?",
+    opts: ["Beban sangat berat dan putaran tinggi","Beban ringan hingga menengah dengan kebutuhan pelumasan yang kontinyu dan konstan","Hanya untuk bearing di lingkungan basah/lembab","Bearing dengan diameter sangat besar"],
+    ans: 1,
+    fb: "Pelumasan Sumbu memanfaatkan kapilaritas (seperti sumbu kompor/lilin) untuk menarik oli naik secara kontinu. Selama reservoir oli ada, pelumasan berlangsung otomatis. Cocok untuk beban ringan-menengah yang membutuhkan pasokan pelumas konstan tanpa intervensi manual."
+  },
+  {
+    q: "Prinsip Fundamental 'Solusi Geometris' menyatakan bahwa bantalan gelinding mengubah pergeseran menjadi perputaran dengan 5 bentuk elemen khusus. Kelima bentuk tersebut adalah...",
+    opts: ["Bola, silinder, kerucut, piramida, dan kubus","Bola, silinder, tong, kerucut, dan jarum","Bola, rol, disk, ring, dan spiral","Bola, silinder, hexagonal, taper, dan needle"],
+    ans: 1,
+    fb: "5 bentuk elemen gelinding khusus: (1) BOLA — kontak titik, kecepatan tinggi; (2) SILINDER — kontak garis, beban radial besar; (3) TONG (Barrel) — toleransi misalignment; (4) KERUCUT (Taper) — beban kombinasi; (5) JARUM (Needle) — profil ultra-tipis, hemat ruang."
+  },
+  {
+    q: "Sebuah insinyur harus memilih bearing untuk mesin dengan kecepatan putaran sangat tinggi. Berdasarkan Matriks Keputusan Pemilihan Bearing, bearing mana yang direkomendasikan?",
+    opts: ["Tapered Roller Bearing","Spherical Roller Bearing","Ball Bearing","Needle Roller Bearing"],
+    ans: 2,
+    fb: "Berdasarkan matriks keputusan: jika kecepatan putar SANGAT TINGGI → Ball Bearing. Ball bearing menggunakan elemen bola yang sangat efisien untuk kecepatan tinggi karena kontak titik meminimalkan gesekan pada RPM tinggi. Cylindrical Roller Bearing juga bisa untuk beban radial berat, tapi untuk kecepatan utama: Ball Bearing."
+  },
+  {
+    q: "Magnetic Bearing termasuk dalam Kategori 3: Non-Gelinding (Spesialisasi). Apa keunggulan utama Magnetic Bearing dibandingkan semua jenis bearing lainnya?",
+    opts: ["Harganya paling murah dan mudah dipasang","Beroperasi tanpa kontak fisik sama sekali, sehingga gesekan mendekati nol","Mampu menahan beban terberat di antara semua jenis bearing","Tidak memerlukan perawatan selama 100 tahun"],
+    ans: 1,
+    fb: "Magnetic Bearing menggunakan medan magnet untuk melayang/mengangkat poros — beroperasi TANPA KONTAK FISIK sama sekali. Ini menghasilkan gesekan yang mendekati nol, tidak ada keausan mekanis, dan tidak memerlukan pelumasan. Digunakan pada aplikasi ultra-presisi seperti turbin molekuler dan hard disk komputer."
+  },
+  {
+    q: "Enam parameter penentu kesuksesan sistem bearing meliputi: Arah Beban, Besar Beban, Kecepatan Putar, Ruang Pemasangan, Tingkat Presisi, dan Kondisi Lingkungan. Filosofi utama dari keenam parameter ini adalah...",
+    opts: ["Selalu pilih bearing yang paling mahal untuk keandalan maksimum","Pemilihan bearing bukan tentang yang terkuat atau tercepat, melainkan menemukan spesifikasi yang paling tepat selaras dengan dinamika sistem mekanik","Selalu pilih bearing dengan kapasitas beban terbesar yang tersedia","Parameter presisi adalah yang paling penting dari semua parameter"],
+    ans: 1,
+    fb: "Filosofi fundamental: pemilihan bearing adalah tentang KESESUAIAN, bukan tentang yang terbesar atau terkuat. Bearing yang 'over-specified' (terlalu kuat untuk aplikasinya) sama buruknya dengan yang 'under-specified' — keduanya menyebabkan inefisiensi atau kegagalan prematur."
+  },
+  {
+    q: "Seorang teknisi memiliki ruang pemasangan yang sangat sempit pada mesin. Berdasarkan Matriks Keputusan, bearing apa yang disarankan?",
+    opts: ["Tapered Roller Bearing karena paling kuat","Spherical Roller Bearing karena toleransi misalignment","Needle Roller Bearing karena profil ultra-tipis menghemat ruang","Ball Bearing karena ringan"],
+    ans: 2,
+    fb: "Matriks Keputusan: Kecepatan tidak terlalu tinggi → cek ruang pemasangan. Jika ruang pemasangan SANGAT SEMPIT → Needle Roller Bearing. Profil ultra-tipisnya (elemen jarum) memungkinkan pemasangan pada celah/ruang yang tidak mungkin diisi bearing jenis lain."
+  },
+  {
+    q: "Pernyataan manakah yang SALAH mengenai karakteristik dan aplikasi bearing berdasarkan materi Pertemuan 6?",
+    opts: ["Deep Groove Ball Bearing memiliki kapasitas beban aksial dua arah","Angular Contact Ball Bearing direkomendasikan untuk spindle mesin CNC","Thrust Ball Bearing dapat digunakan untuk menahan beban radial besar","Tapered Roller Bearing diimplementasikan pada roda mobil dan diferensial kendaraan"],
+    ans: 2,
+    fb: "Pernyataan SALAH: Thrust Ball Bearing TIDAK memiliki kapasitas beban radial — dirancang KHUSUS HANYA untuk beban aksial murni. Menggunakannya untuk beban radial adalah kesalahan desain fatal yang akan menyebabkan kegagalan bearing secara cepat."
+  },
+  {
+    q: "Berdasarkan 'Sintesis Parameter: Ceklis Pemahaman Fundamental', manakah pernyataan yang BENAR?",
+    opts: ["Terdapat 3 klasifikasi utama bantalan gelinding berdasarkan bentuk media geseknya","Bantalan peluru (gelinding) memiliki resistensi gesekan yang sama dengan bantalan luncur","Gesekan adalah gaya absolut yang melawan gerakan dan hanya bisa direduksi, tidak dihilangkan","Fungsi utama bantalan hanya untuk menahan beban aksial"],
+    ans: 2,
+    fb: "Ceklis Fundamental menegaskan: 'Dinamika Gesekan — Gesekan adalah gaya absolut yang melawan gerakan antar permukaan; dapat direduksi, tidak dapat dihilangkan.' Ini adalah prinsip fisika dasar yang menjadi landasan seluruh ilmu mekanika bantalan gelinding."
+  }
+];
+
+// ──────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────
+let state = {
+  current: 0,
+  score: 0,
+  answers: [],   // {q, chosen, correct, isRight}
+  student: {},
+  answered: false
+};
+
+// ──────────────────────────────────────────────
+// ONE-TIME CHECK
+// ──────────────────────────────────────────────
+function checkDone() {
+  return localStorage.getItem('bsi_p6_done') === '1';
+}
+function markDone() {
+  localStorage.setItem('bsi_p6_done', '1');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (checkDone()) {
+    document.getElementById('identity-screen').style.display = 'none';
+    document.getElementById('done-screen').style.display = 'block';
+  }
+});
+
+// ──────────────────────────────────────────────
+// START
+// ──────────────────────────────────────────────
+function startQuiz() {
+  const nama = document.getElementById('inp-nama').value.trim();
+  const nim  = document.getElementById('inp-nim').value.trim();
+  const kelas= document.getElementById('inp-kelas').value.trim();
+
+  if (!nama || !nim || !kelas) {
+    alert('Mohon lengkapi semua data identitas terlebih dahulu.');
+    return;
+  }
+
+  state.student = { nama, nim, kelas };
+  document.getElementById('identity-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  renderQuestion();
+}
+
+// ──────────────────────────────────────────────
+// RENDER QUESTION
+// ──────────────────────────────────────────────
+function renderQuestion() {
+  const i = state.current;
+  const soal = SOAL[i];
+  state.answered = false;
+
+  document.getElementById('q-num').textContent = i + 1;
+  document.getElementById('q-score').textContent = state.score;
+  document.getElementById('progress-fill').style.width = `${((i) / 30) * 100}%`;
+  document.getElementById('q-label').textContent = `SOAL ${String(i+1).padStart(2,'0')}`;
+  document.getElementById('q-text').textContent = soal.q;
+
+  const keys = ['A','B','C','D'];
+  const optsDiv = document.getElementById('q-options');
+  optsDiv.innerHTML = '';
+  soal.opts.forEach((opt, idx) => {
+    const el = document.createElement('div');
+    el.className = 'option';
+    el.dataset.idx = idx;
+    el.innerHTML = `<div class="option-key">${keys[idx]}</div><div class="option-text">${opt}</div>`;
+    el.onclick = () => selectAnswer(idx);
+    optsDiv.appendChild(el);
+  });
+
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  const btn = document.getElementById('btn-next');
+  btn.className = 'btn-next';
+  document.getElementById('next-label').textContent = i < 29 ? 'Soal Berikutnya →' : 'Lihat Hasil →';
+}
+
+// ──────────────────────────────────────────────
+// SELECT ANSWER
+// ──────────────────────────────────────────────
+function selectAnswer(chosen) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const soal = SOAL[state.current];
+  const isRight = chosen === soal.ans;
+  if (isRight) state.score++;
+
+  state.answers.push({
+    qIdx: state.current,
+    qText: soal.q,
+    chosen,
+    correct: soal.ans,
+    isRight,
+    opts: soal.opts
+  });
+
+  // Visual feedback on options
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(el => {
+    el.classList.add('disabled');
+    const idx = parseInt(el.dataset.idx);
+    if (idx === soal.ans) el.classList.add('correct');
+    else if (idx === chosen && !isRight) el.classList.add('wrong');
+  });
+
+  // Text feedback
+  const fb = document.getElementById('q-feedback');
+  if (isRight) {
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = `<span>✓</span><span><strong>Benar!</strong> ${soal.fb}</span>`;
+  } else {
+    const keys = ['A','B','C','D'];
+    fb.className = 'feedback wrong-fb show';
+    fb.innerHTML = `<span>✗</span><span><strong>Kurang tepat.</strong> Jawaban yang benar adalah <strong>${keys[soal.ans]}</strong>. ${soal.fb}</span>`;
+  }
+
+  document.getElementById('q-score').textContent = state.score;
+  document.getElementById('btn-next').className = 'btn-next show';
+}
+
+// ──────────────────────────────────────────────
+// NEXT
+// ──────────────────────────────────────────────
+function nextQuestion() {
+  state.current++;
+  if (state.current >= 30) {
+    showResult();
+  } else {
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ──────────────────────────────────────────────
+// RESULT
+// ──────────────────────────────────────────────
+function showResult() {
+  markDone();
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+
+  const pct = Math.round((state.score / 30) * 100);
+  const { nama, nim, kelas } = state.student;
+
+  document.getElementById('res-name').textContent = nama;
+  document.getElementById('res-info').textContent = `NIM: ${nim}  |  Kelas: ${kelas}`;
+  document.getElementById('res-pct').textContent = pct;
+  document.getElementById('res-benar').textContent = state.score;
+  document.getElementById('res-salah').textContent = 30 - state.score;
+  document.getElementById('res-total').textContent = '30';
+
+  // Ring animation
+  const circle = document.getElementById('ring-circle');
+  const circumference = 2 * Math.PI * 58;
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => {
+    circle.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    circle.style.strokeDashoffset = offset;
+  }, 200);
+
+  // Grade
+  let grade, gradeClass, msg;
+  if (pct >= 85) {
+    grade = 'PREDIKAT A'; gradeClass = 'grade-A';
+    msg = 'Luar biasa! Anda menguasai materi Mekanika Bantalan Gelinding dengan sangat baik. Pemahaman mendalam tentang fisika gesekan, klasifikasi bearing, dan sistem pelumasan telah tercapai.';
+  } else if (pct >= 70) {
+    grade = 'PREDIKAT B'; gradeClass = 'grade-B';
+    msg = 'Bagus! Pemahaman Anda tentang bantalan gelinding cukup kuat. Tinjau kembali topik yang masih kurang untuk memperdalam penguasaan materi.';
+  } else if (pct >= 55) {
+    grade = 'PREDIKAT C'; gradeClass = 'grade-C';
+    msg = 'Cukup. Ada beberapa konsep yang perlu dipelajari lebih lanjut. Fokus pada klasifikasi bearing, analisis beban, dan metode pelumasan.';
+  } else {
+    grade = 'PREDIKAT D'; gradeClass = 'grade-D';
+    msg = 'Perlu peningkatan. Disarankan untuk membaca ulang materi Pertemuan 6 secara menyeluruh, terutama fungsi, jenis, dan aplikasi bearing.';
+  }
+
+  const gb = document.getElementById('res-grade');
+  gb.textContent = grade;
+  gb.className = `grade-badge ${gradeClass}`;
+  document.getElementById('res-msg').textContent = msg;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ──────────────────────────────────────────────
+// PDF DOWNLOAD
+// ──────────────────────────────────────────────
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297;
+  const pct = Math.round((state.score / 30) * 100);
+  const { nama, nim, kelas } = state.student;
+  const now = new Date();
+  const tgl = now.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+  const jam = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+
+  // ── PAGE 1: COVER / SUMMARY ──
+  doc.setFillColor(10, 14, 26);
+  doc.rect(0, 0, W, H, 'F');
+
+  // Header bar
+  doc.setFillColor(0, 102, 255);
+  doc.rect(0, 0, W, 18, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('UNIVERSITAS BINA SARANA INFORMATIKA', W/2, 11, { align: 'center' });
+
+  // Title
+  doc.setTextColor(0, 212, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HASIL KUIS', W/2, 36, { align: 'center' });
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.text('Mekanika Bantalan Gelinding (Bearings)', W/2, 45, { align: 'center' });
+  doc.setTextColor(136, 153, 187);
+  doc.setFontSize(9);
+  doc.text('Mekanika Teknik | Pertemuan 6', W/2, 52, { align: 'center' });
+
+  // Divider
+  doc.setDrawColor(0, 102, 255);
+  doc.setLineWidth(0.5);
+  doc.line(20, 57, W-20, 57);
+
+  // Identity box
+  doc.setFillColor(17, 24, 39);
+  doc.setDrawColor(30, 58, 95);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(20, 62, W-40, 42, 3, 3, 'FD');
+
+  doc.setTextColor(0, 212, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('IDENTITAS MAHASISWA', 28, 71);
+
+  const fields = [['Nama', nama], ['NIM', nim], ['Kelas', kelas], ['Tanggal', `${tgl} • ${jam}`]];
+  fields.forEach(([label, val], i) => {
+    const y = 79 + i*6;
+    doc.setTextColor(136, 153, 187);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(label + ':', 28, y);
+    doc.setTextColor(232, 237, 245);
+    doc.setFont('helvetica', 'bold');
+    doc.text(val, 50, y);
+  });
+
+  // Score big
+  doc.setFillColor(17, 24, 39);
+  doc.setDrawColor(0, 102, 255);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(20, 112, W-40, 50, 3, 3, 'FD');
+
+  doc.setTextColor(136, 153, 187);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('NILAI AKHIR', W/2, 122, { align: 'center' });
+
+  doc.setTextColor(0, 212, 255);
+  doc.setFontSize(44);
+  doc.setFont('helvetica', 'bold');
+  doc.text(String(pct), W/2, 148, { align: 'center' });
+
+  // Grade
+  let gradeText, r, g, b;
+  if (pct >= 85) { gradeText = 'PREDIKAT A'; r=0; g=255; b=157; }
+  else if (pct >= 70) { gradeText = 'PREDIKAT B'; r=0; g=212; b=255; }
+  else if (pct >= 55) { gradeText = 'PREDIKAT C'; r=245; g=197; b=24; }
+  else { gradeText = 'PREDIKAT D'; r=255; g=71; b=87; }
+
+  doc.setTextColor(r, g, b);
+  doc.setFontSize(12);
+  doc.text(gradeText, W/2, 157, { align: 'center' });
+
+  // Stats row
+  const statW = (W-50) / 3;
+  const stats = [
+    ['BENAR', state.score, 0, 255, 157],
+    ['SALAH', 30-state.score, 255, 71, 87],
+    ['TOTAL', 30, 0, 212, 255]
+  ];
+  stats.forEach(([label, val, sr, sg, sb], i) => {
+    const x = 25 + i * (statW + 5);
+    const y = 170;
+    doc.setFillColor(26, 34, 54);
+    doc.setDrawColor(30, 58, 95);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, y, statW, 22, 2, 2, 'FD');
+    doc.setTextColor(sr, sg, sb);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(val), x + statW/2, y+13, { align: 'center' });
+    doc.setTextColor(136, 153, 187);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, x + statW/2, y+19, { align: 'center' });
+  });
+
+  // Summary text
+  const summaryMessages = {
+    A: 'Luar biasa! Penguasaan materi sangat baik.',
+    B: 'Bagus! Pemahaman cukup kuat, ada ruang untuk lebih.',
+    C: 'Cukup. Tinjau kembali beberapa konsep kunci.',
+    D: 'Perlu peningkatan. Baca ulang materi Pertemuan 6.'
+  };
+  const gradeKey = pct >= 85 ? 'A' : pct >= 70 ? 'B' : pct >= 55 ? 'C' : 'D';
+  doc.setTextColor(136, 153, 187);
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'italic');
+  doc.text(summaryMessages[gradeKey], W/2, 203, { align: 'center' });
+
+  // Footer p1
+  doc.setFillColor(0, 102, 255);
+  doc.rect(0, H-12, W, 12, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Dokumen ini digenerate otomatis | BSI Mekanika Teknik P-06', W/2, H-4, { align: 'center' });
+
+  // ── PAGE 2+: DETAIL ANSWERS ──
+  doc.addPage();
+  doc.setFillColor(10, 14, 26);
+  doc.rect(0, 0, W, H, 'F');
+
+  doc.setFillColor(0, 102, 255);
+  doc.rect(0, 0, W, 14, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text('DETAIL JAWABAN — Mekanika Bantalan Gelinding P-06', W/2, 9, {align:'center'});
+
+  let yPos = 22;
+  const keys = ['A','B','C','D'];
+
+  state.answers.forEach((ans, idx) => {
+    const soal = SOAL[ans.qIdx];
+    const lineH = 6;
+
+    // Check page space
+    const estHeight = 14 + soal.opts.length * 7 + 12;
+    if (yPos + estHeight > H - 16) {
+      doc.addPage();
+      doc.setFillColor(10, 14, 26);
+      doc.rect(0, 0, W, H, 'F');
+      doc.setFillColor(0, 102, 255);
+      doc.rect(0, 0, W, 14, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.text('DETAIL JAWABAN (lanjutan)', W/2, 9, {align:'center'});
+      yPos = 22;
+    }
+
+    // Question number badge
+    const bgColor = ans.isRight ? [0,40,20] : [40,10,12];
+    const borderColor = ans.isRight ? [0,255,157] : [255,71,87];
+    doc.setFillColor(...bgColor);
+    doc.setDrawColor(...borderColor);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(15, yPos, W-30, estHeight, 2, 2, 'FD');
+
+    // Q label
+    doc.setTextColor(...borderColor);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','bold');
+    doc.text(`SOAL ${String(idx+1).padStart(2,'0')} — ${ans.isRight ? '✓ BENAR' : '✗ SALAH'}`, 20, yPos+7);
+
+    // Q text
+    doc.setTextColor(220, 230, 245);
+    doc.setFontSize(8);
+    doc.setFont('helvetica','normal');
+    const qLines = doc.splitTextToSize(soal.q, W-46);
+    doc.text(qLines, 20, yPos + 13);
+    yPos += 13 + qLines.length * 4;
+
+    // Options
+    soal.opts.forEach((opt, oi) => {
+      const isCorrect = oi === ans.correct;
+      const isChosen = oi === ans.chosen;
+      if (isCorrect) doc.setTextColor(0, 220, 140);
+      else if (isChosen && !ans.isRight) doc.setTextColor(255, 90, 100);
+      else doc.setTextColor(120, 140, 170);
+
+      doc.setFontSize(7.5);
+      const prefix = isCorrect ? `[${keys[oi]}] ★` : `[${keys[oi]}]  `;
+      const optLines = doc.splitTextToSize(`${prefix}${opt}`, W-50);
+      doc.text(optLines, 22, yPos + 4);
+      yPos += 4 + optLines.length * 4;
+    });
+
+    yPos += 5;
+  });
+
+  // Last page footer
+  doc.setFillColor(0, 102, 255);
+  doc.rect(0, H-12, W, 12, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(7);
+  doc.setFont('helvetica','normal');
+  doc.text(`${nama} | ${nim} | ${kelas} | ${tgl}`, W/2, H-4, {align:'center'});
+
+  // Save
+  const fileName = `Kuis_BSI_P6_${nim || 'mahasiswa'}.pdf`;
+  doc.save(fileName);
+}
+</script>
+</body>
+</html>
